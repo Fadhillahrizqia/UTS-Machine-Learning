@@ -1,0 +1,290 @@
+# ============================================================
+# Klasifikasi Buah: Orange vs Grapefruit
+# Dataset: citrus.csv
+# Model: Decision Tree | Naive Bayes | SVM
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report,
+    ConfusionMatrixDisplay
+)
+
+# ============================================================
+# 1. LOAD DATASET
+# ============================================================
+print("=" * 60)
+print("1. LOAD DATASET")
+print("=" * 60)
+
+df = pd.read_csv('/home/arfin/PycharmProjects/PythonProject/citrus.csv')
+
+print(f"Shape dataset : {df.shape}")
+print(f"Kolom         : {list(df.columns)}")
+print(f"\n5 data pertama:")
+print(df.head())
+print(f"\nInfo dataset:")
+print(df.info())
+print(f"\nStatistik deskriptif:")
+print(df.describe())
+
+# ============================================================
+# 2. EDA (Exploratory Data Analysis)
+# ============================================================
+print("\n" + "=" * 60)
+print("2. EXPLORATORY DATA ANALYSIS")
+print("=" * 60)
+
+print(f"\nDistribusi kelas:")
+print(df['name'].value_counts())
+print(f"\nMissing values:")
+print(df.isnull().sum())
+
+# Visualisasi distribusi kelas
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+df['name'].value_counts().plot(kind='pie', ax=axes[0], autopct='%1.1f%%',
+                                colors=['#FF8C42', '#FFD700'], startangle=90)
+axes[0].set_title('Distribusi Kelas')
+axes[0].set_ylabel('')
+
+df['name'].value_counts().plot(kind='bar', ax=axes[1],
+                                color=['#FF8C42', '#FFD700'], edgecolor='black')
+axes[1].set_title('Jumlah Sampel per Kelas')
+axes[1].set_xlabel('Jenis Buah')
+axes[1].set_ylabel('Jumlah')
+axes[1].tick_params(axis='x', rotation=0)
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/plot_distribusi_kelas.png', dpi=100)
+plt.show()
+
+# Distribusi fitur per kelas
+features = ['diameter', 'weight', 'red', 'green', 'blue']
+colors   = {'orange': '#FF8C42', 'grapefruit': '#FFD700'}
+
+fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+axes = axes.flatten()
+for i, feat in enumerate(features):
+    for label, color in colors.items():
+        axes[i].hist(df[df['name'] == label][feat], alpha=0.6,
+                     bins=40, color=color, label=label, edgecolor='white')
+    axes[i].set_title(f'Distribusi: {feat}')
+    axes[i].set_xlabel(feat)
+    axes[i].set_ylabel('Frekuensi')
+    axes[i].legend()
+axes[5].set_visible(False)
+plt.suptitle('Distribusi Fitur per Kelas', fontsize=14)
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/plot_distribusi_fitur.png', dpi=100)
+plt.show()
+
+# Heatmap korelasi
+plt.figure(figsize=(7, 5))
+sns.heatmap(df[features].corr(), annot=True, fmt='.2f',
+            cmap='coolwarm', square=True, linewidths=0.5)
+plt.title('Heatmap Korelasi Antar Fitur')
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/plot_korelasi.png', dpi=100)
+plt.show()
+
+# ============================================================
+# 3. PREPROCESSING
+# ============================================================
+print("\n" + "=" * 60)
+print("3. PREPROCESSING")
+print("=" * 60)
+
+# Encoding label: orange=0, grapefruit=1
+df['label'] = df['name'].map({'orange': 0, 'grapefruit': 1})
+print(f"Encoding label:")
+print(df[['name', 'label']].drop_duplicates())
+
+# Fitur dan target
+X = df[['diameter', 'weight', 'red', 'green', 'blue']]
+y = df['label']
+
+# Split data 80:20
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+print(f"\nTraining set : {X_train.shape[0]} sampel")
+print(f"Testing set  : {X_test.shape[0]} sampel")
+
+# Normalisasi untuk SVM & Naive Bayes
+scaler         = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled  = scaler.transform(X_test)
+print(f"\nNormalisasi selesai (StandardScaler)")
+
+# ============================================================
+# 4. MODEL 1 - DECISION TREE
+# ============================================================
+print("\n" + "=" * 60)
+print("4. MODEL 1: DECISION TREE")
+print("=" * 60)
+
+dt_model = DecisionTreeClassifier(criterion='gini', random_state=42)
+dt_model.fit(X_train, y_train)          # tanpa normalisasi
+dt_pred  = dt_model.predict(X_test)
+dt_acc   = accuracy_score(y_test, dt_pred)
+
+print(f"\nAccuracy Decision Tree : {dt_acc:.4f} ({dt_acc*100:.2f}%)")
+print(f"\nConfusion Matrix:")
+print(confusion_matrix(y_test, dt_pred))
+print(f"\nClassification Report:")
+print(classification_report(y_test, dt_pred, target_names=['Orange', 'Grapefruit']))
+
+# Visualisasi Confusion Matrix
+fig, ax = plt.subplots(figsize=(5, 4))
+ConfusionMatrixDisplay(confusion_matrix(y_test, dt_pred),
+                       display_labels=['Orange', 'Grapefruit']).plot(ax=ax, cmap='Blues', colorbar=False)
+ax.set_title(f'Confusion Matrix ? Decision Tree\nAccuracy: {dt_acc*100:.2f}%')
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/cm_decision_tree.png', dpi=100)
+plt.show()
+
+# Visualisasi pohon (3 level)
+plt.figure(figsize=(20, 8))
+plot_tree(dt_model, feature_names=X.columns.tolist(),
+          class_names=['Orange', 'Grapefruit'],
+          filled=True, max_depth=3, rounded=True, fontsize=9)
+plt.title('Decision Tree (max_depth=3)')
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/plot_decision_tree.png', dpi=100)
+plt.show()
+
+# ============================================================
+# 5. MODEL 2 - NAIVE BAYES
+# ============================================================
+print("\n" + "=" * 60)
+print("5. MODEL 2: NAIVE BAYES")
+print("=" * 60)
+
+nb_model = GaussianNB()
+nb_model.fit(X_train_scaled, y_train)   # dengan normalisasi
+nb_pred  = nb_model.predict(X_test_scaled)
+nb_acc   = accuracy_score(y_test, nb_pred)
+
+print(f"\nAccuracy Naive Bayes : {nb_acc:.4f} ({nb_acc*100:.2f}%)")
+print(f"\nConfusion Matrix:")
+print(confusion_matrix(y_test, nb_pred))
+print(f"\nClassification Report:")
+print(classification_report(y_test, nb_pred, target_names=['Orange', 'Grapefruit']))
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ConfusionMatrixDisplay(confusion_matrix(y_test, nb_pred),
+                       display_labels=['Orange', 'Grapefruit']).plot(ax=ax, cmap='Greens', colorbar=False)
+ax.set_title(f'Confusion Matrix ? Naive Bayes\nAccuracy: {nb_acc*100:.2f}%')
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/cm_naive_bayes.png', dpi=100)
+plt.show()
+
+# ============================================================
+# 6. MODEL 3 - SUPPORT VECTOR MACHINE
+# ============================================================
+print("\n" + "=" * 60)
+print("6. MODEL 3: SUPPORT VECTOR MACHINE (SVM)")
+print("=" * 60)
+
+svm_model = SVC(kernel='rbf', C=1.0, gamma='scale', random_state=42)
+svm_model.fit(X_train_scaled, y_train)  # dengan normalisasi
+svm_pred  = svm_model.predict(X_test_scaled)
+svm_acc   = accuracy_score(y_test, svm_pred)
+
+print(f"\nAccuracy SVM : {svm_acc:.4f} ({svm_acc*100:.2f}%)")
+print(f"\nConfusion Matrix:")
+print(confusion_matrix(y_test, svm_pred))
+print(f"\nClassification Report:")
+print(classification_report(y_test, svm_pred, target_names=['Orange', 'Grapefruit']))
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ConfusionMatrixDisplay(confusion_matrix(y_test, svm_pred),
+                       display_labels=['Orange', 'Grapefruit']).plot(ax=ax, cmap='Oranges', colorbar=False)
+ax.set_title(f'Confusion Matrix ? SVM\nAccuracy: {svm_acc*100:.2f}%')
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/cm_svm.png', dpi=100)
+plt.show()
+
+# ============================================================
+# 7. PERBANDINGAN KETIGA MODEL
+# ============================================================
+print("\n" + "=" * 60)
+print("7. PERBANDINGAN KETIGA MODEL")
+print("=" * 60)
+
+from sklearn.metrics import precision_score, recall_score, f1_score
+
+hasil = {
+    'Model'    : ['Decision Tree', 'Naive Bayes', 'SVM'],
+    'Accuracy' : [dt_acc, nb_acc, svm_acc],
+    'Precision': [precision_score(y_test, dt_pred, average='weighted'),
+                  precision_score(y_test, nb_pred, average='weighted'),
+                  precision_score(y_test, svm_pred, average='weighted')],
+    'Recall'   : [recall_score(y_test, dt_pred, average='weighted'),
+                  recall_score(y_test, nb_pred, average='weighted'),
+                  recall_score(y_test, svm_pred, average='weighted')],
+    'F1-Score' : [f1_score(y_test, dt_pred, average='weighted'),
+                  f1_score(y_test, nb_pred, average='weighted'),
+                  f1_score(y_test, svm_pred, average='weighted')],
+}
+
+df_hasil = pd.DataFrame(hasil).set_index('Model')
+print(f"\n{(df_hasil * 100).round(2).astype(str).add('%')}")
+
+# Bar chart perbandingan
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+model_names = df_hasil.index.tolist()
+bar_colors  = ['#4C72B0', '#DD8452', '#55A868']
+
+# Accuracy
+bars = axes[0].bar(model_names, df_hasil['Accuracy'] * 100,
+                   color=bar_colors, edgecolor='black', width=0.5)
+axes[0].set_ylim(70, 100)
+axes[0].set_title('Perbandingan Accuracy', fontsize=13)
+axes[0].set_ylabel('Accuracy (%)')
+for bar, val in zip(bars, df_hasil['Accuracy'] * 100):
+    axes[0].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.2,
+                 f'{val:.2f}%', ha='center', va='bottom', fontweight='bold')
+
+# Semua metrik
+metrics = ['Accuracy', 'Precision', 'Recall', 'F1-Score']
+x = np.arange(len(metrics))
+w = 0.25
+for i, (model, color) in enumerate(zip(model_names, bar_colors)):
+    axes[1].bar(x + i*w, df_hasil.loc[model, metrics] * 100,
+                w, label=model, color=color, edgecolor='black')
+axes[1].set_xticks(x + w)
+axes[1].set_xticklabels(metrics)
+axes[1].set_ylim(70, 100)
+axes[1].set_title('Perbandingan Semua Metrik', fontsize=13)
+axes[1].set_ylabel('Score (%)')
+axes[1].legend()
+
+plt.suptitle('Perbandingan Performa Model', fontsize=15)
+plt.tight_layout()
+plt.savefig('/home/arfin/PycharmProjects/PythonProject/plot_perbandingan_model.png', dpi=100)
+plt.show()
+
+# ============================================================
+# 8. KESIMPULAN
+# ============================================================
+print("\n" + "=" * 60)
+print("8. KESIMPULAN")
+print("=" * 60)
+
+best = df_hasil['Accuracy'].idxmax()
+print(f"\n  Decision Tree : {dt_acc*100:.2f}%")
+print(f"  Naive Bayes   : {nb_acc*100:.2f}%")
+print(f"  SVM           : {svm_acc*100:.2f}%")
+print(f"\n  Model terbaik : {best} ({df_hasil.loc[best,'Accuracy']*100:.2f}%) ?")
+print("\nSelesai! Semua grafik tersimpan di folder PythonProject.")
