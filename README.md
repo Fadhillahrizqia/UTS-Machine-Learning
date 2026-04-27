@@ -6,7 +6,7 @@
 
 ---
 
-## 📌 Deskripsi Proyek
+##  Deskripsi Proyek
 
 Proyek ini membangun model **Machine Learning** untuk mengklasifikasikan buah menjadi dua kategori:
 - **Orange** (Jeruk) → Label `0`
@@ -16,7 +16,7 @@ Klasifikasi dilakukan berdasarkan karakteristik fisik dan warna buah menggunakan
 
 ---
 
-## 📁 Struktur Proyek
+##  Struktur Proyek
 
 ```
 PythonProject/
@@ -26,7 +26,7 @@ PythonProject/
 
 ---
 
-## 📦 Library yang Digunakan
+##  Library yang Digunakan
 
 ```python
 import pandas as pd
@@ -49,7 +49,7 @@ pip install pandas numpy scikit-learn matplotlib seaborn
 
 ---
 
-## 📊 Deskripsi Dataset
+##  Deskripsi Dataset
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -163,11 +163,11 @@ X_train_scaled = scaler.fit_transform(X_train)  # fit + transform pada data trai
 X_test_scaled  = scaler.transform(X_test)        # transform saja pada data test
 ```
 
-> ⚠️ `fit` hanya dilakukan pada data training untuk menghindari **data leakage**.
+>  `fit` hanya dilakukan pada data training untuk menghindari **data leakage**.
 
 ---
 
-## 🌳 Model 1: Decision Tree
+##  Model 1: Decision Tree
 
 ### 1. Deskripsi Model
 
@@ -226,7 +226,7 @@ print(classification_report(y_test, dt_pred, target_names=['Orange', 'Grapefruit
 weighted avg       0.90      0.90      0.90      2000
 ```
 
-> ⚠️ Nilai di atas adalah estimasi. Jalankan `klasifikasi_buah.py` untuk hasil aktual.
+>  Nilai di atas adalah estimasi. Jalankan `klasifikasi_buah.py` untuk hasil aktual.
 
 ### 5. Analisis
 
@@ -237,7 +237,7 @@ weighted avg       0.90      0.90      0.90      2000
 
 ---
 
-## 🧮 Model 2: Naive Bayes (Gaussian)
+##  Model 2: Naive Bayes (Gaussian)
 
 ### 1. Deskripsi Model
 
@@ -294,7 +294,7 @@ print(classification_report(y_test, nb_pred, target_names=['Orange', 'Grapefruit
 weighted avg       0.85      0.85      0.84      2000
 ```
 
-> ⚠️ Nilai di atas adalah estimasi. Jalankan `klasifikasi_buah.py` untuk hasil aktual.
+>  Nilai di atas adalah estimasi. Jalankan `klasifikasi_buah.py` untuk hasil aktual.
 
 ### 5. Analisis
 
@@ -305,7 +305,7 @@ weighted avg       0.85      0.85      0.84      2000
 
 ---
 
-## 🚀 Model 3: Support Vector Machine (SVM)
+##  Model 3: Support Vector Machine (SVM)
 
 ### 1. Deskripsi Model
 
@@ -365,7 +365,7 @@ print(classification_report(y_test, svm_pred, target_names=['Orange', 'Grapefrui
 weighted avg       0.96      0.96      0.96      2000
 ```
 
-> ⚠️ Nilai di atas adalah estimasi. Jalankan `klasifikasi_buah.py` untuk hasil aktual.
+>  Nilai di atas adalah estimasi. Jalankan `klasifikasi_buah.py` untuk hasil aktual.
 
 ### 5. Analisis
 
@@ -377,7 +377,7 @@ weighted avg       0.96      0.96      0.96      2000
 
 ---
 
-## 📊 Perbandingan Ketiga Model
+##  Perbandingan Ketiga Model
 
 ```python
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -407,7 +407,7 @@ Output visual perbandingan: `plot_perbandingan_model.png`
 
 ---
 
-## 🏆 Kesimpulan
+##  Kesimpulan
 
 - **Model terbaik: Support Vector Machine (SVM)** dengan akurasi ~96.2%
 - SVM unggul karena mampu menemukan hyperplane optimal untuk memisahkan dua kelas di ruang 5 dimensi
@@ -416,7 +416,7 @@ Output visual perbandingan: `plot_perbandingan_model.png`
 
 ---
 
-## 🚀 Cara Menjalankan
+##  Cara Menjalankan
 
 1. Pastikan `citrus.csv` sudah ada di `/home/arfin/PycharmProjects/PythonProject/`
 2. Install library yang dibutuhkan:
